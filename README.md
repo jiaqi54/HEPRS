@@ -1,8 +1,10 @@
 # HEPRS
 
-We introduces a novel application of Fully Homomorphic Encryption (FHE) for secure and private computation of Polygenic Risk Scores (PRS) in genomic studies. Utilizing the CKKs protocol within the Lattigo library, this approach maintains the confidentiality of both genomic data and PRS models within a three-party system involving clients, modelers, and evaluators. 
+Here we introduce an application of Fully Homomorphic Encryption (FHE) for secure and private computation of Polygenic Risk Scores (PRS) in genomic studies. Illustrated with the schizophrenia risk prediction, our work employs FHE to perform computations on encrypted genotype data, preserving the privacy and security of sensitive genetic information. Utilizing the CKKs protocol within the Lattigo library, this approach maintains the confidentiality of both genomic data and PRS models within a three-party system involving clients, modelers, and evaluators. 
 
-![](fig1.jpg)
+![text](fig1.png)
+
+The client can be an individual or healthcare provider who possesses private genomic data and seeks obtain PRS calculated based on the genome. The modeler can represent a research institue or a centralized data repository, who builds PRS models off population datasets, which are also sensitive. The evaluator provides the computation power to handle the PRS calculation over large datasets or models. Both the client and modeler don't trust the evaluator to handle the genomic data or model directly, which is where our FHE method comes in. The client would generate a pair a keys, the puclic and secret keys, for encryption and decryption respectively, and only the public key will be shared by the modeler and evaluator. The client and modeler will each encrypt their data using the public key, and send encrypted data to the evaluator. The evaluator will perform calculation directly on encrypted data, without need or capability to decrypt the genomes or the model. The results will be returned to the client in the encrypted form, which can only be decrypted by the client with the secret key. The modeler does need to trust the evaluator not to share the model with the client though. Eventually, only the client will be able to access the plaintext PRS results.
 
 **Encryption Method**
 
@@ -14,5 +16,11 @@ With this method 128-bit security is maintained. We implement our method with th
 
 ## Usage
 
-Our work is inspired by the 
+To showcase the applicability of our method, the `main.go` contains all 4 steps of the process: input encryption, model encryption, encrypted calculation, and output decryption. To run the program, use command
+
+`go run main.go <genotypes.csv> <betas.csv> <yourphenotype> <NumberIterations> <Moduli> <NumberIndividual>`
+
+`<genotypes.csv>`: Replace with your genotype input. It's in the csv format with each row represents genotypes of an individual.
+`<betas.csv>`: Replace with your model parameters. The number of parameters should be
+
 
