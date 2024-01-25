@@ -1,3 +1,12 @@
 # HEPRS
 
 We introduces a novel application of Fully Homomorphic Encryption (FHE) for secure and private computation of Polygenic Risk Scores (PRS) in genomic studies. Focusing on schizophrenia risk prediction, our work employs FHE to perform computations on encrypted genotype data, preserving the privacy and security of sensitive genetic information. Utilizing the CKKs protocol within the Lattigo library, this approach maintains the confidentiality of both genomic data and PRS models within a three-party system involving clients, modelers, and evaluators. 
+
+## Encryption Method
+
+Encryption of the model and inputs is performed using Lattigo, a Go module that implements Ring-Learning-With-Errors-based homomorphic-encryption primitives and Multiparty-Homomorphic-Encryption-based secure protocols. For our task, we use the Full-RNS Homomorphic Encryption for Arithmetic for Approximate Numbers (HEAAN, a.k.a. CKKS) scheme. 
+
+## Security level 
+
+With this method 128-bit security is maintained. We implement our method with the following parameter PN13QP218 choice. This includes a ring dimension of 8,192 and logQP equal to 218. More information about this parameter choice can be found with this link https://github.com/tuneinsight/lattigo/blob/master/ckks/params.go. 
+
