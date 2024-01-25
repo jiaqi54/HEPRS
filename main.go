@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 	"strconv"
 	"time"
 
@@ -41,6 +42,26 @@ func readCsvFile(filePath string) [][]float64 {
 	}
 
 	return coefs
+}
+
+func PrintMemUsage() {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	// For info on each, see: https://golang.org/pkg/runtime/#MemStats
+	fmt.Printf("Alloc = %v MiB", bToMb(m.Alloc))
+	fmt.Printf("\tTotalAlloc = %v MiB", bToMb(m.TotalAlloc))
+	fmt.Printf("\tHeapSys = %v MiB", bToMb(m.HeapSys))
+	fmt.Printf("\tNumGC = %v\n", m.NumGC)
+}
+
+func bToMb(b uint64) uint64 {
+	return b / 1024 / 1024
+}
+
+func get_HeapSys() uint64 {
+	var m runtime.MemStats
+	runtime.ReadMemStats(&m)
+	return m.HeapSys
 }
 
 func read_ciphertext(d1 int, d2 int, filepath string) [][]*ckks.Ciphertext {
@@ -194,13 +215,6 @@ func Encrypt_model(pk *rlwe.PublicKey, params ckks.Parameters, filepath string, 
 	slots := 1 << log_slots
 	COEF_ENCRYPT_SIZE = 1 + ((len(coefs[0]) - 1) / slots)
 
-	fmt.Println("x_data row#: ")
-	fmt.Println(len(coefs))
-	fmt.Println("x_data col#: ")
-	fmt.Println(len(coefs[0]))
-	fmt.Println("x_excrypt_size: ")
-	fmt.Println(COEF_ENCRYPT_SIZE)
-
 	err := os.Chdir(dir_name)
 	if err != nil {
 		panic(err)
@@ -217,9 +231,9 @@ func Encrypt_model(pk *rlwe.PublicKey, params ckks.Parameters, filepath string, 
 	write_ciphertext(coef_data_encrypt, "coef_data_encrypt")
 }
 
-func Encrypt_input(filepath string, params ckks.Parameters, dir_name string) (*rlwe.RelinearizationKey, *rlwe.RotationKeySet, ckks.Parameters, *rlwe.PublicKey, *rlwe.SecretKey, int, int) {
+func Encrypt_input(filepath string, params ckks.Parameters, dir_name string, n_sample int64) (*rlwe.RelinearizationKey, *rlwe.RotationKeySet, ckks.Parameters, *rlwe.PublicKey, *rlwe.SecretKey, int, int) {
 
-	x_data := readCsvFile(filepath)
+	x_data := readCsvFile(filepath)[:n_sample]
 	N_SAMPLE := len(x_data)
 
 	log_slots := params.LogSlots()
@@ -238,15 +252,6 @@ func Encrypt_input(filepath string, params ckks.Parameters, dir_name string) (*r
 	x_data_encrypt := encrypt_mat(encoder, encryptor, x_data, log_slots, max_level, scale)
 
 	X_ENCRYPT_SIZE = 1 + ((len(x_data[0]) - 1) / slots)
-	fmt.Println("x_data row#: ")
-	fmt.Println(len(x_data))
-	fmt.Println("x_data col#: ")
-	fmt.Println(len(x_data[0]))
-	fmt.Println("x_excrypt_size: ")
-	fmt.Println(X_ENCRYPT_SIZE)
-	fmt.Println("slots and log_slots")
-	fmt.Println(slots)
-	fmt.Println(log_slots)
 
 	err := os.Chdir(dir_name)
 	if err != nil {
@@ -323,7 +328,7 @@ func main() {
 	N_PHENO := 1
 
 	// Check command-line arguments
-	if len(os.Args) != 6 {
+	if len(os.Args) != 7 {
 		fmt.Println("Usage: " + os.Args[0] + " </path/to/genotype_data.txt> </path/to/input/model.csv>")
 		os.Exit(1)
 	}
@@ -333,9 +338,11 @@ func main() {
 	var pheno_name = os.Args[3]
 	var niter = os.Args[4]
 	var param_num = os.Args[5]
-	//var param_choice, err = strconv.ParseInt(os.Args[4], 36, 64)
+	var num_sample = os.Args[6]
+
 	i_param, err := strconv.ParseInt(param_num, 10, 64)
 	itnum, err := strconv.ParseInt(niter, 10, 64)
+	n_sample, err := strconv.ParseInt(num_sample, 10, 64)
 	if err != nil {
 
 	}
@@ -343,11 +350,10 @@ func main() {
 	param_string := [5]string{"PN12QP109", "PN13QP218", "PN14QP438", "PN15QP880", "PN16QP1761"}
 	param_vec := [5]ckks.ParametersLiteral{ckks.PN12QP109, ckks.PN13QP218, ckks.PN14QP438, ckks.PN15QP880, ckks.PN16QP1761}
 
-	for j := 1; j < 2; j++ {
+	for j := i_param; j < i_param+1; j++ {
 
 		i_param = int64(j)
 		// do this for each parameter
-		times := make([][]time.Duration, itnum)
 
 		params, err := ckks.NewParametersFromLiteral(param_vec[i_param])
 		if err != nil {
@@ -360,6 +366,7 @@ func main() {
 			var dir_name string
 			dir_name = param_string[i_param] + "_dir_" + it_string
 			times_vec := make([]time.Duration, 5)
+
 			if info, err := os.Stat(dir_name); os.IsNotExist(err) {
 				err = os.Mkdir(dir_name, 0755)
 				if err != nil {
@@ -369,54 +376,24 @@ func main() {
 			}
 
 			// Client encrypts the input, and saves the encrypted data to "x_data_encrypt"
-			rlk, rot_keys, params, pk, sk, max_level, N_SAMPLE := Encrypt_input(geno_data, params, dir_name)
+			rlk, rot_keys, params, pk, sk, max_level, N_SAMPLE := Encrypt_input(geno_data, params, dir_name, n_sample)
 			fmt.Println("Input Encrypt success")
-			times_vec[0] = time.Since(start_it_time)
-			fmt.Println(times_vec[0])
 			// Modeler encrypts model, and saves the encrypted coefficients to "coef_data_encrpyt"
 			Encrypt_model(pk, params, coef_data, max_level, dir_name)
 			fmt.Println("Model Encrypt success")
-			times_vec[1] = time.Since(start_it_time) - times_vec[0]
 			// Evaluator reads "coef_data_encrpyt" and "x_data_encrypt", and saves the output to "model_output_encrypt"
 			Run_model_encrypt(N_SAMPLE, N_PHENO, params, rlk, rot_keys, "coef_data_encrpyt", "x_data_encrypt", "model_output_encrypt")
 			fmt.Println("Run model success")
-			times_vec[2] = time.Since(start_it_time) - times_vec[1]
 
 			Decrypt_output(N_SAMPLE, N_PHENO, params, sk, pheno_name, dir_name)
 			fmt.Println("Decrypt success")
-			times_vec[3] = time.Since(start_it_time) - times_vec[2]
 			times_vec[4] = time.Since(start_it_time)
+			PrintMemUsage()
 
 			log.Printf("The program "+param_string[i_param]+" took %s", times_vec[4])
 			err = os.Chdir("..")
 			if err != nil {
 				panic(err)
-			}
-
-			times[i] = times_vec
-		}
-
-		f, err := os.Create("time_" + pheno_name + "_" + param_string[i_param] + ".csv")
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-
-		if err != nil {
-			log.Fatalln("failed to open file", err)
-		}
-
-		w := csv.NewWriter(f)
-		defer w.Flush()
-
-		for _, record := range times {
-			rr := make([]string, len(record))
-			for i, f := range record {
-				num := float64(f.Milliseconds())
-				rr[i] = strconv.FormatFloat(num, 'E', -1, 32)
-			}
-			if err := w.Write(rr); err != nil {
-				log.Fatalln("error writing record to file", err)
 			}
 		}
 
