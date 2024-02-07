@@ -20,7 +20,14 @@ To showcase the applicability of our method, the `main.go` contains all 4 steps 
 
 `go run main.go <genotypes.csv> <betas.csv> <yourphenotype> <NumberIterations> <Moduli> <NumberIndividual>`
 
-`<genotypes.csv>`: Replace with your genotype input. It's in the csv format with each row represents genotypes of an individual.
-`<betas.csv>`: Replace with your model parameters. The number of parameters should be
+`<genotypes.csv>`: Replace with your genotype input. It's in the csv format with each row representing an individual and each column representing an SNP.
+
+`<betas.csv>`: Replace with your model parameters. The number of parameters should be consistent with the number of SNPs in `genotypes.csv`.
+
+`<yourphenotype>`: Name of your phenotype.
+
+`<NumberIterations>`: You can run the program for multiple iterations to evaluate the stochasticity. Use 1 for most cases.
+
+`<Moduli>`: A crucial encryption parameter that balances accuracy and computational cost. We provide built in moduli from 
 
 
