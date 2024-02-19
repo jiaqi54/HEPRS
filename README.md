@@ -22,7 +22,7 @@ To showcase the applicability of our method, the `main.go` contains all 4 steps 
 
 `<genotypes.csv>`: Replace with your genotype input. It's in the csv format with each row representing an individual and each column representing an SNP.
 
-`<betas.csv>`: Replace with your model parameters. The number of parameters should be consistent with the number of SNPs in `genotypes.csv`.
+`<betas.csv>`: Replace with your model parameters. The number of parameters should be consistent with the number of SNPs in `genotypes.csv`. If you have an intercept, please manually add a column of ones in your `<genotypes.csv>`.
 
 `<yourphenotype>`: Name of your phenotype.
 
