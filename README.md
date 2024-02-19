@@ -28,6 +28,10 @@ To showcase the applicability of our method, the `main.go` contains all 4 steps 
 
 `<NumberIterations>`: You can run the program for multiple iterations to evaluate the stochasticity. Use 1 for most cases.
 
-`<Moduli>`: A crucial encryption parameter that balances accuracy and computational cost. We provide built in moduli from 
+`<Moduli>`: A crucial encryption parameter that balances accuracy and computational cost. We provide built in moduli including $2^{13}$, $2^{14}$, $2^{15}$ and $2^{16}$.
+
+`<NumberIndividual>`: Number of individuals included in your `<genotypes.csv>`.
+
+## Example
 
 
