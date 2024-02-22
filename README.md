@@ -38,7 +38,7 @@ In the `/example_data` directory, we provide a small synthetic dataset generated
 
 To run HEPRS on this example dataset, use:
 
-`go run main.go example/genotype_10kSNP_50individual.csv beta_10kSNP_phenotype0.csv phenotype0 1 1 50`
+`go run main.go example_data/genotype_10kSNP_50individual.csv example_data/beta_10kSNP_phenotype0.csv phenotype0 1 1 50`
 
 The above command does the following:
 
@@ -46,6 +46,9 @@ The above command does the following:
 * Encrypt the PRS model (betas).
 * Calculate PRS using using homomorphic encryption.
 * Decrupt the output and save as a plaintext csv file.
+  
+This process is expected to take just a few seconds on a personal laptop.
 
-This process is expected to take less than a minute on a personal laptop.
- 
+A directory named with the moduli and iteration will be generated (e.g. PN13QP218_dir_0), which includes the encrypted genomic data, encrypted model, encrypted model output and decrypted (plaintext) PRS results. 
+
+
