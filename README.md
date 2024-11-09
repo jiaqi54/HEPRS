@@ -18,7 +18,9 @@ With this method 128-bit security is maintained. We implement our method with th
 
 To showcase the applicability of our method, the `main.go` contains all 4 steps of the process: input encryption, model encryption, encrypted calculation, and output decryption. To run the program, use command
 
-`go run main.go <genotypes.csv> <betas.csv> <yourphenotype> <NumberIterations> <Moduli> <NumberIndividual>`
+`go run main.go -pq <genotypes.csv> <betas.csv> <yourphenotype> <NumberIterations> <Moduli> <NumberIndividual>`
+
+Arguments:
 
 `<genotypes.csv>`: Replace with your genotype input. It's in the csv format with each row representing an individual and each column representing an SNP.
 
@@ -28,9 +30,15 @@ To showcase the applicability of our method, the `main.go` contains all 4 steps 
 
 `<NumberIterations>`: You can run the program for multiple iterations to evaluate the stochasticity. Use 1 for most cases.
 
-`<Moduli>`: A crucial encryption parameter that balances accuracy and computational cost. We provide built in moduli including $2^{13}$, $2^{14}$, $2^{15}$ and $2^{16}$.
+<Moduli>: This parameter influences both security and performance. Increasing N enhances security but reduces performance. To simplify usage, we currently restrict N to the following options: $2^{13}, 2^{14}, 2^{15}$, and $2^{16}$. Other parameters are automatically set based on the Lattigo defaults. Users can adjust the balance between security and computational cost by selecting an appropriate value and using the `-pq` option for parameters that achieve post-quantum security. When running the command, use integers $0, 1, 2, 3$ for $2^{13}, 2^{14}, 2^{15}, 2^{16}$.
 
 `<NumberIndividual>`: Number of individuals included in your `<genotypes.csv>`.
+
+Options:
+
+`-h, --help`: Show help message
+
+`-pq`: Use post-quantum parameters
 
 ## Example
 
@@ -38,14 +46,13 @@ In the `/example_data` directory, we provide a small synthetic dataset generated
 
 To run HEPRS on this example dataset, use:
 
-`go run main.go example/genotype_10kSNP_50individual.csv beta_10kSNP_phenotype0.csv phenotype0 1 1 50`
+`go run main.go -pq example/genotype_10kSNP_50individual.csv beta_10kSNP_phenotype0.csv phenotype0 1 0 50`
 
 The above command does the following:
 
 * Encrypt the genotype matrix.
 * Encrypt the PRS model (betas).
 * Calculate PRS using using homomorphic encryption.
-* Decrupt the output and save as a plaintext csv file.
+* Decrypt the output and save as a plaintext csv file.
 
 This process is expected to take less than a minute on a personal laptop.
- 

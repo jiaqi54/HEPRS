@@ -323,13 +323,54 @@ func Decrypt_output(N_SAMPLE int, N_PHENO int, params ckks.Parameters, sk *rlwe.
 		}
 	}
 }
+
+func printHelp() {
+	fmt.Println(`Usage:
+  go run main.go </path/to/genotype_data.txt> </path/to/input/model.csv> <pheno_name> <niter> <param_num> <num_sample>
+
+Arguments:
+  </path/to/genotype_data.txt>   Path to the genotype data file.
+  </path/to/input/model.csv>     Path to the input model CSV file
+  <pheno_name>                   Name of the phenotype
+  <niter>                        Number of iterations (integer)
+  <param_num>                    Number of parameters (integer)
+  <num_sample>                   Number of samples (integer)
+
+Options:
+  -h, --help                     Show this help message
+  -pq                            Use post-quantum parameters
+  
+ For more information, please visit our github page https://github.com/jiaqi54/HEPRS
+ For additional support, please contact elizabeth.knight@yale.edu and jiaqi.li@yale.edu`)
+}
+
 func main() {
 
 	N_PHENO := 1
 
-	// Check command-line arguments
-	if len(os.Args) != 7 {
-		fmt.Println("Usage: " + os.Args[0] + " </path/to/genotype_data.txt> </path/to/input/model.csv>")
+	// Check if -h or --help is passed as an argument
+	for _, arg := range os.Args {
+		if arg == "-h" || arg == "--help" {
+			printHelp()
+			os.Exit(0)
+		}
+	}
+
+	// Check if the -pq flag is included
+	pqFlag := false
+	parsedArgs := []string{}
+	for _, arg := range os.Args[1:] { // Skip the program name
+		if arg == "-pq" {
+			pqFlag = true
+		} else {
+			parsedArgs = append(parsedArgs, arg)
+		}
+	}
+
+	// Check the number of remaining arguments
+	if len(parsedArgs) != 6 {
+		fmt.Println("Error: Incorrect number of arguments.")
+		printHelp()
 		os.Exit(1)
 	}
 
@@ -340,15 +381,41 @@ func main() {
 	var param_num = os.Args[5]
 	var num_sample = os.Args[6]
 
+	// Parse integer inputs and handle errors
 	i_param, err := strconv.ParseInt(param_num, 10, 64)
-	itnum, err := strconv.ParseInt(niter, 10, 64)
-	n_sample, err := strconv.ParseInt(num_sample, 10, 64)
 	if err != nil {
-
+		fmt.Printf("Error: Invalid format for param_num (%s). It must be an integer.\n", param_num)
+		printHelp()
+		os.Exit(1)
 	}
 
-	param_string := [5]string{"PN12QP109", "PN13QP218", "PN14QP438", "PN15QP880", "PN16QP1761"}
-	param_vec := [5]ckks.ParametersLiteral{ckks.PN12QP109, ckks.PN13QP218, ckks.PN14QP438, ckks.PN15QP880, ckks.PN16QP1761}
+	itnum, err := strconv.ParseInt(niter, 10, 64)
+	if err != nil {
+		fmt.Printf("Error: Invalid format for niter (%s). It must be an integer.\n", niter)
+		printHelp()
+		os.Exit(1)
+	}
+
+	n_sample, err := strconv.ParseInt(num_sample, 10, 64)
+	if err != nil {
+		fmt.Printf("Error: Invalid format for num_sample (%s). It must be an integer.\n", num_sample)
+		printHelp()
+		os.Exit(1)
+	}
+
+	// Use the appropriate parameter set
+	var param_string [4]string
+	var param_vec [4]ckks.ParametersLiteral
+
+	if pqFlag {
+		fmt.Println("Using post-quantum parameters...")
+		param_string = [4]string{"PN13QP202pq", "PN14QP411pq", "PN15QP827pq", "PN16QP1654pq"}
+		param_vec = [4]ckks.ParametersLiteral{ckks.PN13QP202pq, ckks.PN14QP411pq, ckks.PN15QP827pq, ckks.PN16QP1654pq}
+	} else {
+		fmt.Println("Using default parameters...")
+		param_string = [4]string{"PN13QP218", "PN14QP438", "PN15QP880", "PN16QP1761"}
+		param_vec = [4]ckks.ParametersLiteral{ckks.PN13QP218, ckks.PN14QP438, ckks.PN15QP880, ckks.PN16QP1761}
+	}
 
 	for j := i_param; j < i_param+1; j++ {
 
