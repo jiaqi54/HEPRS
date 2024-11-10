@@ -56,3 +56,9 @@ The above command does the following:
 * Decrypt the output and save as a plaintext csv file.
 
 This process is expected to take less than a minute on a personal laptop.
+
+## For more information
+
+The preprint related to this work is public on biorxiv: https://www.biorxiv.org/content/10.1101/2024.05.26.595961v1
+
+If you have additional questions, please contact elizabeth.knight@yale.edu and jiaqi.li@yale.edu 
