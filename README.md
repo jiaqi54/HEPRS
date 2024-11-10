@@ -55,7 +55,9 @@ The above command does the following:
 * Calculate PRS using using homomorphic encryption.
 * Decrypt the output and save as a plaintext csv file.
 
-This process is expected to take less than a minute on a personal laptop.
+This process is expected to take just a few seconds on a personal laptop.
+
+A directory named with the moduli and iteration will be generated (e.g. PN13QP218_dir_0), which includes the encrypted genomic data, encrypted model, encrypted model output and decrypted (plaintext) PRS results.
 
 ## For more information
 
