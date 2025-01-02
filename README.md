@@ -46,7 +46,9 @@ In the `/example_data` directory, we provide a small synthetic dataset generated
 
 To run HEPRS on this example dataset, use:
 
-`go run main.go -pq example/genotype_10kSNP_50individual.csv beta_10kSNP_phenotype0.csv phenotype0 1 0 50`
+```
+go run main.go example_data/genotype_10kSNP_50individual.csv example_data/beta_10kSNP_phenotype0.csv phenotype0 1 0 50 -pq
+```
 
 The above command does the following:
 
