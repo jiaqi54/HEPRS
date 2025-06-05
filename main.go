@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/tuneinsight/lattigo/v3/ckks"
+	"github.com/tuneinsight/lattigo/v3/ring"
 	"github.com/tuneinsight/lattigo/v3/rlwe"
 )
 
@@ -407,14 +408,24 @@ func main() {
 	var param_string [5]string
 	var param_vec [5]ckks.ParametersLiteral
 
+	PN12QP125 := ckks.ParametersLiteral{
+		LogN:         12,
+		LogSlots:     11,
+		Q:            []uint64{0x3FD74001, 0x29898001, 0x262E6001},
+		P:            []uint64{0x1000002001},
+		DefaultScale: 1 << 30,
+		Sigma:        rlwe.DefaultSigma,
+		RingType:     ring.Standard,
+	}
+
 	if pqFlag {
 		fmt.Println("Using post-quantum parameters...")
-		param_string = [5]string{"PN12QP101pq", "PN13QP202pq", "PN14QP411pq", "PN15QP827pq", "PN16QP1654pq"}
-		param_vec = [5]ckks.ParametersLiteral{ckks.PN12QP101pq, ckks.PN13QP202pq, ckks.PN14QP411pq, ckks.PN15QP827pq, ckks.PN16QP1654pq}
+		param_string = [5]string{"PN12QP125", "PN13QP202pq", "PN14QP411pq", "PN15QP827pq", "PN16QP1654pq"}
+		param_vec = [5]ckks.ParametersLiteral{PN12QP125, ckks.PN13QP202pq, ckks.PN14QP411pq, ckks.PN15QP827pq, ckks.PN16QP1654pq}
 	} else {
 		fmt.Println("Using default parameters...")
-		param_string = [5]string{"PN12QP109", "PN13QP218", "PN14QP438", "PN15QP880", "PN16QP1761"}
-		param_vec = [5]ckks.ParametersLiteral{ckks.PN12QP109, ckks.PN13QP218, ckks.PN14QP438, ckks.PN15QP880, ckks.PN16QP1761}
+		param_string = [5]string{"PN12QP125", "PN13QP218", "PN14QP438", "PN15QP880", "PN16QP1761"}
+		param_vec = [5]ckks.ParametersLiteral{PN12QP125, ckks.PN13QP218, ckks.PN14QP438, ckks.PN15QP880, ckks.PN16QP1761}
 	}
 
 	for j := i_param; j < i_param+1; j++ {
@@ -426,6 +437,19 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		// params, err := ckks.NewParametersFromLiteral(
+		// 	ckks.ParametersLiteral{
+		// 		LogN:         12,
+		// 		LogSlots:     11,
+		// 		Q:            []uint64{0x3FD74001, 0x29898001, 0x262E6001},
+		// 		P:            []uint64{0x1000002001},
+		// 		DefaultScale: 1 << 30,
+		// 		Sigma:        rlwe.DefaultSigma,
+		// 		RingType:     ring.Standard,
+		// 	})
+		// if err != nil {
+		// 	panic(err)
+		// }
 
 		for i := int64(0); i < itnum; i++ {
 			start_it_time := time.Now()
