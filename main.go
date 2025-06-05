@@ -404,17 +404,17 @@ func main() {
 	}
 
 	// Use the appropriate parameter set
-	var param_string [4]string
-	var param_vec [4]ckks.ParametersLiteral
+	var param_string [5]string
+	var param_vec [5]ckks.ParametersLiteral
 
 	if pqFlag {
 		fmt.Println("Using post-quantum parameters...")
-		param_string = [4]string{"PN13QP202pq", "PN14QP411pq", "PN15QP827pq", "PN16QP1654pq"}
-		param_vec = [4]ckks.ParametersLiteral{ckks.PN13QP202pq, ckks.PN14QP411pq, ckks.PN15QP827pq, ckks.PN16QP1654pq}
+		param_string = [5]string{"PN12QP101pq", "PN13QP202pq", "PN14QP411pq", "PN15QP827pq", "PN16QP1654pq"}
+		param_vec = [5]ckks.ParametersLiteral{ckks.PN12QP101pq, ckks.PN13QP202pq, ckks.PN14QP411pq, ckks.PN15QP827pq, ckks.PN16QP1654pq}
 	} else {
 		fmt.Println("Using default parameters...")
-		param_string = [4]string{"PN13QP218", "PN14QP438", "PN15QP880", "PN16QP1761"}
-		param_vec = [4]ckks.ParametersLiteral{ckks.PN13QP218, ckks.PN14QP438, ckks.PN15QP880, ckks.PN16QP1761}
+		param_string = [5]string{"PN12QP109", "PN13QP218", "PN14QP438", "PN15QP880", "PN16QP1761"}
+		param_vec = [5]ckks.ParametersLiteral{ckks.PN12QP109, ckks.PN13QP218, ckks.PN14QP438, ckks.PN15QP880, ckks.PN16QP1761}
 	}
 
 	for j := i_param; j < i_param+1; j++ {
