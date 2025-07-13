@@ -12,7 +12,7 @@ Encryption of the model and inputs is performed using Lattigo, a Go module that 
 
 **Security level**
 
-With this method, at least a 128-bit security is maintained. We implement our method with the PN13QP218 parameter choice. This includes a ring dimension of 8,192 and logQP equal to 218. Parameters for higher security levels are also available. See Usage section below.
+With this method, at least a 128-bit security is maintained. We implement our method with the PN12QP125 parameter choice. This includes a ring dimension of 4,096 and logQP equal to 109. Parameters for higher security levels are also available. See Usage section below.
 
 ## Usage
 
@@ -30,7 +30,7 @@ Arguments:
 
 `<NumberIterations>`: You can run the program for multiple iterations to evaluate the stochasticity. Use 1 for most cases.
 
-<Moduli>: The modulus parameter (N) influences both security and performance of the FHE method. Increasing the value of N enhances security but reduces performance. To simplify usage, we currently restrict N to the following options: $2^{13}, 2^{14}, 2^{15}$, and $2^{16}$. (When running the command, use integers $0, 1, 2, 3$ for $2^{13}, 2^{14}, 2^{15}, 2^{16}$.) Other FHE parameters are automatically set based on the Lattigo defaults. Users can adjust the balance between security and computational cost by selecting an appropriate value for N and using the `-pq` option for Lattigo parameters that achieve post-quantum security. 
+<Moduli>: The modulus parameter (N) influences both security and performance of the FHE method. Increasing the value of N enhances security but reduces performance. To simplify usage, we currently restrict N to the following options: $2^{12}, 2^{13}, 2^{14}, 2^{15}$, and $2^{16}$. (When running the command, use integers $0, 1, 2, 3, 4$ for $2^{12}, 2^{13}, 2^{14}, 2^{15}, 2^{16}$.) Other FHE parameters are automatically set based on the Lattigo defaults. Users can adjust the balance between security and computational cost by selecting an appropriate value for N and using the `-pq` option for Lattigo parameters that achieve post-quantum security. 
 
 `<NumberIndividual>`: Number of individuals included in your `<genotypes.csv>` file.
 
@@ -39,6 +39,8 @@ Additional Options:
 `-h, --help`: Show help message
 
 `-pq`: Use post-quantum parameters from the Lattigo package defaults.
+
+`-print`: Print time and memory usage. This option will also save time and memory usage of each step into csv files.
 
 ## Example
 
@@ -59,7 +61,7 @@ The above command does the following:
 
 This process is expected to take just a few seconds on a personal laptop.
 
-A directory named with the moduli and iteration will be generated (e.g. PN13QP218_dir_0), which includes the encrypted genomic data, encrypted model, encrypted model output and decrypted (plaintext) PRS results.
+A directory named with the moduli and iteration will be generated (e.g. PN12QP125_dir_0), which includes the encrypted genomic data, encrypted model, encrypted model output and decrypted (plaintext) PRS results.
 
 ## For more information
 

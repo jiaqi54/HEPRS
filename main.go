@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/tuneinsight/lattigo/v3/ckks"
+	"github.com/tuneinsight/lattigo/v3/ring"
 	"github.com/tuneinsight/lattigo/v3/rlwe"
 )
 
@@ -339,6 +340,7 @@ Arguments:
 Options:
   -h, --help                     Show this help message
   -pq                            Use post-quantum parameters
+  -print						 Print and save memory and time usage of each step
   
  For more information, please visit our github page https://github.com/jiaqi54/HEPRS
  For additional support, please contact elizabeth.knight@yale.edu and jiaqi.li@yale.edu`)
@@ -356,13 +358,18 @@ func main() {
 		}
 	}
 
-	// Check if the -pq flag is included
+	// Check if the -pq and -print flag is included
 	pqFlag := false
+	pFlag := false
 	parsedArgs := []string{}
+	
 	for _, arg := range os.Args[1:] { // Skip the program name
-		if arg == "-pq" {
+		switch arg {
+		case "-pq":
 			pqFlag = true
-		} else {
+		case "-print":
+			pFlag = true
+		default:
 			parsedArgs = append(parsedArgs, arg)
 		}
 	}
@@ -404,23 +411,40 @@ func main() {
 	}
 
 	// Use the appropriate parameter set
-	var param_string [4]string
-	var param_vec [4]ckks.ParametersLiteral
+	var param_string [5]string
+	var param_vec [5]ckks.ParametersLiteral
+
+	PN12QP125 := ckks.ParametersLiteral{
+		LogN:         12,
+		LogSlots:     11,
+		Q:            []uint64{0x3FD74001, 0x29898001, 0x262E6001},
+		P:            []uint64{0x1000002001},
+		DefaultScale: 1 << 30,
+		Sigma:        rlwe.DefaultSigma,
+		RingType:     ring.Standard,
+	}
 
 	if pqFlag {
 		fmt.Println("Using post-quantum parameters...")
-		param_string = [4]string{"PN13QP202pq", "PN14QP411pq", "PN15QP827pq", "PN16QP1654pq"}
-		param_vec = [4]ckks.ParametersLiteral{ckks.PN13QP202pq, ckks.PN14QP411pq, ckks.PN15QP827pq, ckks.PN16QP1654pq}
+		param_string = [5]string{"PN12QP125", "PN13QP202pq", "PN14QP411pq", "PN15QP827pq", "PN16QP1654pq"}
+		param_vec = [5]ckks.ParametersLiteral{PN12QP125, ckks.PN13QP202pq, ckks.PN14QP411pq, ckks.PN15QP827pq, ckks.PN16QP1654pq}
 	} else {
 		fmt.Println("Using default parameters...")
-		param_string = [4]string{"PN13QP218", "PN14QP438", "PN15QP880", "PN16QP1761"}
-		param_vec = [4]ckks.ParametersLiteral{ckks.PN13QP218, ckks.PN14QP438, ckks.PN15QP880, ckks.PN16QP1761}
+		param_string = [5]string{"PN12QP125", "PN13QP218", "PN14QP438", "PN15QP880", "PN16QP1761"}
+		param_vec = [5]ckks.ParametersLiteral{PN12QP125, ckks.PN13QP218, ckks.PN14QP438, ckks.PN15QP880, ckks.PN16QP1761}
 	}
 
 	for j := i_param; j < i_param+1; j++ {
 
 		i_param = int64(j)
 		// do this for each parameter
+		var times [][]time.Duration
+		var mems [][]uint64
+		
+		if pFlag {
+			times = make([][]time.Duration, itnum)
+			mems = make([][]uint64, itnum)
+		}
 
 		params, err := ckks.NewParametersFromLiteral(param_vec[i_param])
 		if err != nil {
@@ -429,10 +453,14 @@ func main() {
 
 		for i := int64(0); i < itnum; i++ {
 			start_it_time := time.Now()
+			if pFlag {
+				PrintMemUsage()
+			}
 			it_string := strconv.FormatInt(i, 10)
 			var dir_name string
 			dir_name = param_string[i_param] + "_dir_" + it_string
 			times_vec := make([]time.Duration, 5)
+			mems_vec := make([]uint64, 5)
 
 			if info, err := os.Stat(dir_name); os.IsNotExist(err) {
 				err = os.Mkdir(dir_name, 0755)
@@ -443,17 +471,42 @@ func main() {
 			}
 
 			// Client encrypts the input, and saves the encrypted data to "x_data_encrypt"
+			if pFlag {
+				mems_vec[0] = get_HeapSys()
+			}
 			rlk, rot_keys, params, pk, sk, max_level, N_SAMPLE := Encrypt_input(geno_data, params, dir_name, n_sample)
 			fmt.Println("Input Encrypt success")
+			if pFlag {
+				times_vec[0] = time.Since(start_it_time)
+				PrintMemUsage()
+				mems_vec[1] = get_HeapSys()
+			}
+
 			// Modeler encrypts model, and saves the encrypted coefficients to "coef_data_encrpyt"
 			Encrypt_model(pk, params, coef_data, max_level, dir_name)
 			fmt.Println("Model Encrypt success")
+			if pFlag {
+				times_vec[1] = time.Since(start_it_time) - times_vec[0]
+				PrintMemUsage()
+				mems_vec[2] = get_HeapSys()
+			}
+
 			// Evaluator reads "coef_data_encrpyt" and "x_data_encrypt", and saves the output to "model_output_encrypt"
 			Run_model_encrypt(N_SAMPLE, N_PHENO, params, rlk, rot_keys, "coef_data_encrpyt", "x_data_encrypt", "model_output_encrypt")
 			fmt.Println("Run model success")
+			if pFlag {
+				times_vec[2] = time.Since(start_it_time) - times_vec[0] - times_vec[1]
+				PrintMemUsage()
+				mems_vec[3] = get_HeapSys()
+			}
 
 			Decrypt_output(N_SAMPLE, N_PHENO, params, sk, pheno_name, dir_name)
 			fmt.Println("Decrypt success")
+			if pFlag {
+				times_vec[3] = time.Since(start_it_time) - times_vec[0] - times_vec[1] - times_vec[2]
+				mems_vec[4] = get_HeapSys()
+			}
+			
 			times_vec[4] = time.Since(start_it_time)
 			PrintMemUsage()
 
@@ -461,6 +514,59 @@ func main() {
 			err = os.Chdir("..")
 			if err != nil {
 				panic(err)
+			}
+			if pFlag {
+				times[i] = times_vec
+				mems[i] = mems_vec
+			}
+		}
+
+		if pFlag {
+			f, err := os.Create("time_" + pheno_name + "_" + param_string[i_param] + "_" + strconv.FormatInt(n_sample, 10) + ".csv")
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+	
+			if err != nil {
+				log.Fatalln("failed to open file", err)
+			}
+	
+			w := csv.NewWriter(f)
+			defer w.Flush()
+	
+			for _, record := range times {
+				rr := make([]string, len(record))
+				for i, f := range record {
+					num := float64(f.Milliseconds())
+					rr[i] = strconv.FormatFloat(num, 'E', -1, 32)
+				}
+				if err := w.Write(rr); err != nil {
+					log.Fatalln("error writing record to file", err)
+				}
+			}
+			
+			f, err = os.Create("mem_" + pheno_name + "_" + param_string[i_param] + "_" + strconv.FormatInt(n_sample, 10) + ".csv")
+			if err != nil {
+				panic(err)
+			}
+			defer f.Close()
+	
+			if err != nil {
+				log.Fatalln("failed to open file", err)
+			}
+	
+			w = csv.NewWriter(f)
+			defer w.Flush()
+	
+			for _, record := range mems {
+				rr := make([]string, len(record))
+				for i, f := range record {
+					rr[i] = strconv.FormatUint(f, 10)
+				}
+				if err := w.Write(rr); err != nil {
+					log.Fatalln("error writing record to file", err)
+				}
 			}
 		}
 
