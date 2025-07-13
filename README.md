@@ -12,7 +12,7 @@ Encryption of the model and inputs is performed using Lattigo, a Go module that 
 
 **Security level**
 
-With this method, at least a 128-bit security is maintained. We implement our method with the PN13QP218 parameter choice. This includes a ring dimension of 4,096 and logQP equal to 109. Parameters for higher security levels are also available. See Usage section below.
+With this method, at least a 128-bit security is maintained. We implement our method with the PN12QP125 parameter choice. This includes a ring dimension of 4,096 and logQP equal to 109. Parameters for higher security levels are also available. See Usage section below.
 
 ## Usage
 
@@ -61,7 +61,7 @@ The above command does the following:
 
 This process is expected to take just a few seconds on a personal laptop.
 
-A directory named with the moduli and iteration will be generated (e.g. PN13QP218_dir_0), which includes the encrypted genomic data, encrypted model, encrypted model output and decrypted (plaintext) PRS results.
+A directory named with the moduli and iteration will be generated (e.g. PN12QP125_dir_0), which includes the encrypted genomic data, encrypted model, encrypted model output and decrypted (plaintext) PRS results.
 
 ## For more information
 
