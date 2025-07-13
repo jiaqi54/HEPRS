@@ -12,7 +12,7 @@ Encryption of the model and inputs is performed using Lattigo, a Go module that 
 
 **Security level**
 
-With this method, at least a 128-bit security is maintained. We implement our method with the PN13QP218 parameter choice. This includes a ring dimension of 8,192 and logQP equal to 218. Parameters for higher security levels are also available. See Usage section below.
+With this method, at least a 128-bit security is maintained. We implement our method with the PN13QP218 parameter choice. This includes a ring dimension of 4,096 and logQP equal to 109. Parameters for higher security levels are also available. See Usage section below.
 
 ## Usage
 
